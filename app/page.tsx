@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 type Direction = 'up' | 'down' | 'left' | 'right';
-type GameState = 'running' | 'victory' | 'defeat';
+type GameState = 'waiting' | 'running' | 'paused' | 'victory' | 'defeat';
 
 type KeysState = {
   up: boolean;
@@ -380,10 +380,24 @@ const drawGame = ({ ctx, player, enemies, bullets, walls, flickerPlayer, state, 
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.font = '10px "Press Start 2P", monospace';
-    const headline = state === 'victory' ? 'MISSION COMPLETE' : 'MISSION FAILED';
-    ctx.fillText(headline, FIELD_SIZE / 2, FIELD_SIZE / 2 - 12);
-    ctx.font = '8px "Press Start 2P", monospace';
-    ctx.fillText('Press RESET to redeploy', FIELD_SIZE / 2, FIELD_SIZE / 2 + 12);
+    
+    if (state === 'waiting') {
+      ctx.fillText('READY TO DEPLOY', FIELD_SIZE / 2, FIELD_SIZE / 2 - 12);
+      ctx.font = '8px "Press Start 2P", monospace';
+      ctx.fillText('Press START button to begin', FIELD_SIZE / 2, FIELD_SIZE / 2 + 12);
+    } else if (state === 'paused') {
+      ctx.fillText('MISSION PAUSED', FIELD_SIZE / 2, FIELD_SIZE / 2 - 12);
+      ctx.font = '8px "Press Start 2P", monospace';
+      ctx.fillText('Press RESUME to continue', FIELD_SIZE / 2, FIELD_SIZE / 2 + 12);
+    } else if (state === 'victory') {
+      ctx.fillText('MISSION COMPLETE', FIELD_SIZE / 2, FIELD_SIZE / 2 - 12);
+      ctx.font = '8px "Press Start 2P", monospace';
+      ctx.fillText('Press RESTART to redeploy', FIELD_SIZE / 2, FIELD_SIZE / 2 + 12);
+    } else if (state === 'defeat') {
+      ctx.fillText('MISSION FAILED', FIELD_SIZE / 2, FIELD_SIZE / 2 - 12);
+      ctx.font = '8px "Press Start 2P", monospace';
+      ctx.fillText('Press RESTART to redeploy', FIELD_SIZE / 2, FIELD_SIZE / 2 + 12);
+    }
   }
 };
 
@@ -395,14 +409,14 @@ export default function HomePage() {
   const bulletsRef = useRef<Bullet[]>([]);
   const wallsRef = useRef<Wall[]>(levels[0].walls);
   const lastTimeRef = useRef<number | null>(null);
-  const gameStatusRef = useRef<GameState>('running');
+  const gameStatusRef = useRef<GameState>('waiting');
   const playerHitTimerRef = useRef(0);
   const [score, setScore] = useState(0);
   const [playerHealth, setPlayerHealth] = useState(3);
   const [currentLevel, setCurrentLevel] = useState(0);
   const [enemiesRemaining, setEnemiesRemaining] = useState(enemiesRef.current.length);
-  const [statusMessage, setStatusMessage] = useState('Initializing battlefield...');
-  const [gameState, setGameState] = useState<GameState>('running');
+  const [statusMessage, setStatusMessage] = useState('Press START to begin mission');
+  const [gameState, setGameState] = useState<GameState>('waiting');
   const [resetLoopSeed, setResetLoopSeed] = useState(0);
 
   const updateStatusMessage = useCallback((message: string) => {
@@ -432,7 +446,7 @@ export default function HomePage() {
       wallsRef.current = level.walls;
       keysRef.current = createKeysState();
       lastTimeRef.current = null;
-      gameStatusRef.current = 'running';
+      gameStatusRef.current = isDefeat ? 'waiting' : 'running';
       playerHitTimerRef.current = 0;
 
       if (levelIndex === 0) {
@@ -441,12 +455,39 @@ export default function HomePage() {
       }
 
       setEnemiesRemaining(enemiesRef.current.length);
-      updateStatusMessage(`LEVEL ${levelIndex + 1}: Destroy the rogue tanks!`);
-      updateGameState('running');
+      if (isDefeat) {
+        updateStatusMessage('Press START to begin mission');
+        updateGameState('waiting');
+      } else {
+        updateStatusMessage(`LEVEL ${levelIndex + 1}: Destroy the rogue tanks!`);
+        updateGameState('running');
+      }
       setResetLoopSeed((seed) => seed + 1);
     },
     [updateGameState, updateStatusMessage]
   );
+
+  const startGame = useCallback(() => {
+    if (gameState === 'waiting') {
+      gameStatusRef.current = 'running';
+      updateGameState('running');
+      updateStatusMessage(`LEVEL ${currentLevel + 1}: Destroy the rogue tanks!`);
+      lastTimeRef.current = null;
+    }
+  }, [gameState, currentLevel, updateGameState, updateStatusMessage]);
+
+  const togglePause = useCallback(() => {
+    if (gameState === 'running') {
+      gameStatusRef.current = 'paused';
+      updateGameState('paused');
+      updateStatusMessage('Game paused - Press RESUME to continue');
+    } else if (gameState === 'paused') {
+      gameStatusRef.current = 'running';
+      updateGameState('running');
+      updateStatusMessage(`LEVEL ${currentLevel + 1}: Destroy the rogue tanks!`);
+      lastTimeRef.current = null;
+    }
+  }, [gameState, currentLevel, updateGameState, updateStatusMessage]);
 
   useEffect(() => {
     resetGame(currentLevel);
@@ -487,6 +528,9 @@ export default function HomePage() {
       } else if (code === 'Space' || code === 'Enter') {
         event.preventDefault();
         attemptPlayerFire();
+      } else if (code === 'Escape') {
+        event.preventDefault();
+        togglePause();
       }
     };
 
@@ -511,7 +555,7 @@ export default function HomePage() {
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
     };
-  }, [attemptPlayerFire]);
+  }, [attemptPlayerFire, togglePause]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -542,6 +586,7 @@ export default function HomePage() {
       const enemies = enemiesRef.current;
       const bullets = bulletsRef.current;
 
+      // Only update game logic when actually running
       if (gameStatusRef.current === 'running') {
         const keys = keysRef.current;
 
@@ -762,7 +807,7 @@ export default function HomePage() {
                       : ''
                 }`}
               >
-                {gameState === 'victory' ? 'Victory' : gameState === 'defeat' ? 'Critical' : 'Engaged'}
+                {gameState === 'victory' ? 'Victory' : gameState === 'defeat' ? 'Critical' : gameState === 'waiting' ? 'Ready' : gameState === 'paused' ? 'Paused' : 'Engaged'}
               </span>
             </div>
           </div>
@@ -771,10 +816,28 @@ export default function HomePage() {
         <canvas ref={canvasRef} className="game-canvas" />
 
         <div className="action-bar">
+          {gameState === 'waiting' && (
+            <button
+              type="button"
+              className="action-bar__button action-bar__button--primary"
+              onClick={startGame}
+            >
+              Start Game
+            </button>
+          )}
+          {(gameState === 'running' || gameState === 'paused') && (
+            <button
+              type="button"
+              className="action-bar__button"
+              onClick={togglePause}
+            >
+              {gameState === 'running' ? 'Pause' : 'Resume'}
+            </button>
+          )}
           <button type="button" className="action-bar__button" onClick={() => resetGame(currentLevel)}>
             Reset Level
           </button>
-          {gameState !== 'running' && (
+          {(gameState === 'victory' || gameState === 'defeat') && (
             <button
               type="button"
               className="action-bar__button action-bar__button--primary"
@@ -783,7 +846,9 @@ export default function HomePage() {
               Restart Game
             </button>
           )}
-          <span className="action-bar__tip">Arrow keys or WASD to move — Space / Enter to shoot</span>
+          <span className="action-bar__tip">
+            Arrow keys or WASD to move — Space / Enter to shoot — ESC to pause
+          </span>
         </div>
 
         <div className="game-log">{statusMessage}</div>
