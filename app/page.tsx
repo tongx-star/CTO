@@ -386,10 +386,8 @@ const drawGame = ({ ctx, player, enemies, bullets, walls, flickerPlayer, state, 
       ctx.font = '8px "Press Start 2P", monospace';
       ctx.fillText('Press START button to begin', FIELD_SIZE / 2, FIELD_SIZE / 2 + 12);
     } else if (state === 'paused') {
-      ctx.fillText('MISSION PAUSED', FIELD_SIZE / 2, FIELD_SIZE / 2 - 12);
-      ctx.font = '8px "Press Start 2P", monospace';
-      ctx.fillText('Press RESUME to continue', FIELD_SIZE / 2, FIELD_SIZE / 2 + 12);
-    } else if (state === 'victory') {
+      ctx.fillText('MISSION PAUSED', FIELD_SIZE / 2, FIELD_SIZE / 2);
+      } else if (state === 'victory') {
       ctx.fillText('MISSION COMPLETE', FIELD_SIZE / 2, FIELD_SIZE / 2 - 12);
       ctx.font = '8px "Press Start 2P", monospace';
       ctx.fillText('Press RESTART to redeploy', FIELD_SIZE / 2, FIELD_SIZE / 2 + 12);
@@ -431,6 +429,7 @@ export default function HomePage() {
     (levelIndex = 0, isDefeat = false) => {
       if (isDefeat) {
         setPlayerHealth(3);
+        setScore(0);
       }
       const level = levels[levelIndex];
       if (!level) {
@@ -456,7 +455,7 @@ export default function HomePage() {
 
       setEnemiesRemaining(enemiesRef.current.length);
       if (isDefeat) {
-        updateStatusMessage('Press START to begin mission');
+        updateStatusMessage('Ready to deploy');
         updateGameState('waiting');
       } else {
         updateStatusMessage(`LEVEL ${levelIndex + 1}: Destroy the rogue tanks!`);
@@ -480,7 +479,7 @@ export default function HomePage() {
     if (gameState === 'running') {
       gameStatusRef.current = 'paused';
       updateGameState('paused');
-      updateStatusMessage('Game paused - Press RESUME to continue');
+      updateStatusMessage('MISSION PAUSED');
     } else if (gameState === 'paused') {
       gameStatusRef.current = 'running';
       updateGameState('running');
@@ -834,16 +833,13 @@ export default function HomePage() {
               {gameState === 'running' ? 'Pause' : 'Resume'}
             </button>
           )}
-          <button type="button" className="action-bar__button" onClick={() => resetGame(currentLevel)}>
-            Reset Level
-          </button>
           {(gameState === 'victory' || gameState === 'defeat') && (
             <button
               type="button"
               className="action-bar__button action-bar__button--primary"
               onClick={() => resetGame(gameState === 'defeat' ? currentLevel : 0, true)}
             >
-              Restart Game
+              {gameState === 'victory' ? 'Next Level' : 'Restart Game'}
             </button>
           )}
           <span className="action-bar__tip">
