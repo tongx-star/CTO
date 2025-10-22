@@ -35,6 +35,20 @@ interface Bullet {
   size: number;
 }
 
+interface Wall {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
+interface Level {
+  playerStart: { x: number; y: number; direction: Direction };
+  enemies: Omit<EnemyTank, 'cooldown' | 'alive' | 'changeTimer' | 'fireTimer' | 'id'>[];
+  walls: Wall[];
+}
+
+
 const GRID_SIZE = 16;
 const CELL_SIZE = 16;
 const FIELD_SIZE = GRID_SIZE * CELL_SIZE;
@@ -56,6 +70,73 @@ const directionVectors: Record<Direction, { dx: number; dy: number }> = {
   right: { dx: 1, dy: 0 }
 };
 
+const levels: Level[] = [
+  {
+    playerStart: { x: FIELD_SIZE / 2 - TANK_SIZE / 2, y: FIELD_SIZE - CELL_SIZE * 2, direction: 'up' },
+    enemies: [
+      { x: CELL_SIZE, y: CELL_SIZE, direction: 'down' },
+      { x: FIELD_SIZE - CELL_SIZE * 2, y: CELL_SIZE, direction: 'down' },
+      { x: FIELD_SIZE / 2 - TANK_SIZE / 2, y: CELL_SIZE * 2, direction: 'down' }
+    ],
+    walls: []
+  },
+  {
+    playerStart: { x: FIELD_SIZE / 2 - TANK_SIZE / 2, y: FIELD_SIZE - CELL_SIZE * 2, direction: 'up' },
+    enemies: [
+      { x: CELL_SIZE, y: CELL_SIZE, direction: 'down' },
+      { x: FIELD_SIZE - CELL_SIZE * 2, y: CELL_SIZE, direction: 'down' },
+      { x: CELL_SIZE, y: FIELD_SIZE / 2 - CELL_SIZE, direction: 'right' },
+      { x: FIELD_SIZE - CELL_SIZE * 2, y: FIELD_SIZE / 2, direction: 'left' }
+    ],
+    walls: [
+      { x: FIELD_SIZE / 2 - CELL_SIZE * 2, y: FIELD_SIZE / 2 - CELL_SIZE / 2, width: CELL_SIZE * 4, height: CELL_SIZE }
+    ]
+  },
+  {
+    playerStart: { x: CELL_SIZE * 2, y: FIELD_SIZE - CELL_SIZE * 2, direction: 'up' },
+    enemies: [
+      { x: FIELD_SIZE - CELL_SIZE * 3, y: CELL_SIZE * 2, direction: 'down' },
+      { x: FIELD_SIZE / 2, y: CELL_SIZE * 2, direction: 'left' },
+      { x: CELL_SIZE * 2, y: CELL_SIZE * 5, direction: 'right' },
+      { x: FIELD_SIZE - CELL_SIZE * 5, y: FIELD_SIZE / 2, direction: 'up' }
+    ],
+    walls: [
+      { x: 0, y: FIELD_SIZE / 3, width: FIELD_SIZE / 2, height: CELL_SIZE },
+      { x: FIELD_SIZE / 2, y: (FIELD_SIZE / 3) * 2, width: FIELD_SIZE / 2, height: CELL_SIZE }
+    ]
+  },
+  {
+    playerStart: { x: FIELD_SIZE / 2 - TANK_SIZE / 2, y: FIELD_SIZE - CELL_SIZE * 2, direction: 'up' },
+    enemies: [
+      { x: CELL_SIZE, y: CELL_SIZE, direction: 'down' },
+      { x: FIELD_SIZE - CELL_SIZE * 2, y: CELL_SIZE, direction: 'down' },
+      { x: CELL_SIZE, y: FIELD_SIZE - CELL_SIZE * 3, direction: 'up' },
+      { x: FIELD_SIZE - CELL_SIZE * 2, y: FIELD_SIZE - CELL_SIZE * 3, direction: 'up' },
+      { x: FIELD_SIZE / 2 - TANK_SIZE / 2, y: CELL_SIZE * 3, direction: 'down' }
+    ],
+    walls: [
+      { x: CELL_SIZE * 4, y: CELL_SIZE * 4, width: CELL_SIZE, height: CELL_SIZE * 8 },
+      { x: FIELD_SIZE - CELL_SIZE * 5, y: CELL_SIZE * 4, width: CELL_SIZE, height: CELL_SIZE * 8 }
+    ]
+  },
+  {
+    playerStart: { x: FIELD_SIZE / 2 - TANK_SIZE / 2, y: FIELD_SIZE / 2 - TANK_SIZE / 2, direction: 'up' },
+    enemies: [
+      { x: 0, y: 0, direction: 'down' },
+      { x: FIELD_SIZE - TANK_SIZE, y: 0, direction: 'down' },
+      { x: 0, y: FIELD_SIZE - TANK_SIZE, direction: 'up' },
+      { x: FIELD_SIZE - TANK_SIZE, y: FIELD_SIZE - TANK_SIZE, direction: 'up' },
+      { x: FIELD_SIZE / 2 - TANK_SIZE / 2, y: 0, direction: 'down' },
+      { x: FIELD_SIZE / 2 - TANK_SIZE / 2, y: FIELD_SIZE - TANK_SIZE, direction: 'up' }
+    ],
+    walls: [
+      { x: 0, y: FIELD_SIZE / 2 - CELL_SIZE / 2, width: FIELD_SIZE / 3, height: CELL_SIZE },
+      { x: FIELD_SIZE - FIELD_SIZE / 3, y: FIELD_SIZE / 2 - CELL_SIZE / 2, width: FIELD_SIZE / 3, height: CELL_SIZE }
+    ]
+  }
+];
+
+
 const randomRange = (min: number, max: number): number => Math.random() * (max - min) + min;
 
 const createKeysState = (): KeysState => ({
@@ -65,10 +146,8 @@ const createKeysState = (): KeysState => ({
   right: false
 });
 
-const createPlayerTank = (): Tank => ({
-  x: FIELD_SIZE / 2 - TANK_SIZE / 2,
-  y: FIELD_SIZE - CELL_SIZE * 2,
-  direction: 'up',
+const createPlayerTank = (level: Level): Tank => ({
+  ...level.playerStart,
   cooldown: 0,
   alive: true
 });
@@ -82,11 +161,14 @@ const createEnemy = (id: number, position: { x: number; y: number; direction: Di
   id
 });
 
-const spawnEnemyTanks = (): EnemyTank[] => [
-  createEnemy(1, { x: CELL_SIZE, y: CELL_SIZE, direction: 'down' }),
-  createEnemy(2, { x: FIELD_SIZE - CELL_SIZE * 2, y: CELL_SIZE, direction: 'down' }),
-  createEnemy(3, { x: FIELD_SIZE / 2 - TANK_SIZE / 2, y: CELL_SIZE * 2, direction: 'down' })
-];
+const spawnEnemyTanks = (level: Level): EnemyTank[] =>
+  level.enemies.map((enemy, i) =>
+    createEnemy(i, {
+      x: enemy.x,
+      y: enemy.y,
+      direction: enemy.direction
+    })
+  );
 
 const clampTank = (tank: Tank) => {
   const min = 4;
@@ -105,6 +187,16 @@ const intersects = (
   bw: number,
   bh: number
 ) => ax < bx + bw && ax + aw > bx && ay < by + bh && ay + ah > by;
+
+const isCollidingWithWalls = (x: number, y: number, width: number, height: number, walls: Wall[]) => {
+  for (const wall of walls) {
+    if (intersects(x, y, width, height, wall.x, wall.y, wall.width, wall.height)) {
+      return true;
+    }
+  }
+  return false;
+};
+
 
 const spawnBulletFromTank = (tank: Tank, owner: Bullet['owner'], bullets: Bullet[]) => {
   const vector = directionVectors[tank.direction];
@@ -156,11 +248,19 @@ const chooseEnemyDirection = (enemy: EnemyTank, player: Tank) => {
   enemy.changeTimer = randomRange(80, 200);
 };
 
-const moveEnemy = (enemy: EnemyTank, delta: number) => {
+const moveEnemy = (enemy: EnemyTank, delta: number, walls: Wall[]) => {
+  const originalX = enemy.x;
+  const originalY = enemy.y;
   const vector = directionVectors[enemy.direction];
   enemy.x += vector.dx * ENEMY_SPEED * delta;
   enemy.y += vector.dy * ENEMY_SPEED * delta;
   clampTank(enemy);
+
+  if (isCollidingWithWalls(enemy.x, enemy.y, TANK_SIZE, TANK_SIZE, walls)) {
+    enemy.x = originalX;
+    enemy.y = originalY;
+    chooseEnemyDirection(enemy, playerRef.current);
+  }
 };
 
 type DrawParams = {
@@ -168,12 +268,13 @@ type DrawParams = {
   player: Tank;
   enemies: EnemyTank[];
   bullets: Bullet[];
+  walls: Wall[];
   flickerPlayer: boolean;
   state: GameState;
   time: number;
 };
 
-const drawGame = ({ ctx, player, enemies, bullets, flickerPlayer, state, time }: DrawParams) => {
+const drawGame = ({ ctx, player, enemies, bullets, walls, flickerPlayer, state, time }: DrawParams) => {
   ctx.clearRect(0, 0, FIELD_SIZE, FIELD_SIZE);
   ctx.fillStyle = '#0a031a';
   ctx.fillRect(0, 0, FIELD_SIZE, FIELD_SIZE);
@@ -192,6 +293,12 @@ const drawGame = ({ ctx, player, enemies, bullets, flickerPlayer, state, time }:
     ctx.lineTo(FIELD_SIZE, offset + 0.5);
     ctx.stroke();
   }
+
+  ctx.fillStyle = '#6a6a7a';
+  walls.forEach((wall) => {
+    ctx.fillRect(wall.x, wall.y, wall.width, wall.height);
+  });
+
 
   const drawTank = (tank: Tank, palette: { body: string; tread: string; turret: string; shadow: string }) => {
     if (!tank.alive) {
@@ -283,14 +390,16 @@ const drawGame = ({ ctx, player, enemies, bullets, flickerPlayer, state, time }:
 export default function HomePage() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const keysRef = useRef<KeysState>(createKeysState());
-  const playerRef = useRef<Tank>(createPlayerTank());
-  const enemiesRef = useRef<EnemyTank[]>(spawnEnemyTanks());
+  const playerRef = useRef<Tank>(createPlayerTank(levels[0]));
+  const enemiesRef = useRef<EnemyTank[]>(spawnEnemyTanks(levels[0]));
   const bulletsRef = useRef<Bullet[]>([]);
+  const wallsRef = useRef<Wall[]>(levels[0].walls);
   const lastTimeRef = useRef<number | null>(null);
   const gameStatusRef = useRef<GameState>('running');
   const playerHitTimerRef = useRef(0);
   const [score, setScore] = useState(0);
   const [playerHealth, setPlayerHealth] = useState(3);
+  const [currentLevel, setCurrentLevel] = useState(0);
   const [enemiesRemaining, setEnemiesRemaining] = useState(enemiesRef.current.length);
   const [statusMessage, setStatusMessage] = useState('Initializing battlefield...');
   const [gameState, setGameState] = useState<GameState>('running');
@@ -304,26 +413,45 @@ export default function HomePage() {
     setGameState((prev) => (prev === state ? prev : state));
   }, []);
 
-  const resetGame = useCallback(() => {
-    playerRef.current = createPlayerTank();
-    enemiesRef.current = spawnEnemyTanks();
-    bulletsRef.current = [];
-    keysRef.current = createKeysState();
-    lastTimeRef.current = null;
-    gameStatusRef.current = 'running';
-    playerHitTimerRef.current = 0;
+  const resetGame = useCallback(
+    (levelIndex = 0, isDefeat = false) => {
+      if (isDefeat) {
+        setPlayerHealth(3);
+      }
+      const level = levels[levelIndex];
+      if (!level) {
+        updateGameState('victory');
+        updateStatusMessage('ALL MISSIONS COMPLETE! YOU ARE A HERO!');
+        return;
+      }
 
-    setScore(0);
-    setPlayerHealth(3);
-    setEnemiesRemaining(enemiesRef.current.length);
-    updateStatusMessage('Destroy the rogue tanks!');
-    updateGameState('running');
-    setResetLoopSeed((seed) => seed + 1);
-  }, [updateGameState, updateStatusMessage]);
+      setCurrentLevel(levelIndex);
+      playerRef.current = createPlayerTank(level);
+      enemiesRef.current = spawnEnemyTanks(level);
+      bulletsRef.current = [];
+      wallsRef.current = level.walls;
+      keysRef.current = createKeysState();
+      lastTimeRef.current = null;
+      gameStatusRef.current = 'running';
+      playerHitTimerRef.current = 0;
+
+      if (levelIndex === 0) {
+        setScore(0);
+        setPlayerHealth(3);
+      }
+
+      setEnemiesRemaining(enemiesRef.current.length);
+      updateStatusMessage(`LEVEL ${levelIndex + 1}: Destroy the rogue tanks!`);
+      updateGameState('running');
+      setResetLoopSeed((seed) => seed + 1);
+    },
+    [updateGameState, updateStatusMessage]
+  );
 
   useEffect(() => {
-    resetGame();
-  }, [resetGame]);
+    resetGame(currentLevel);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [resetLoopSeed]);
 
   const attemptPlayerFire = useCallback(() => {
     if (gameStatusRef.current !== 'running') {
@@ -344,16 +472,16 @@ export default function HomePage() {
     const handleKeyDown = (event: KeyboardEvent) => {
       const { code } = event;
 
-      if (code === 'ArrowUp') {
+      if (code === 'ArrowUp' || code === 'KeyW') {
         event.preventDefault();
         keysRef.current.up = true;
-      } else if (code === 'ArrowDown') {
+      } else if (code === 'ArrowDown' || code === 'KeyS') {
         event.preventDefault();
         keysRef.current.down = true;
-      } else if (code === 'ArrowLeft') {
+      } else if (code === 'ArrowLeft' || code === 'KeyA') {
         event.preventDefault();
         keysRef.current.left = true;
-      } else if (code === 'ArrowRight') {
+      } else if (code === 'ArrowRight' || code === 'KeyD') {
         event.preventDefault();
         keysRef.current.right = true;
       } else if (code === 'Space' || code === 'Enter') {
@@ -365,13 +493,13 @@ export default function HomePage() {
     const handleKeyUp = (event: KeyboardEvent) => {
       const { code } = event;
 
-      if (code === 'ArrowUp') {
+      if (code === 'ArrowUp' || code === 'KeyW') {
         keysRef.current.up = false;
-      } else if (code === 'ArrowDown') {
+      } else if (code === 'ArrowDown' || code === 'KeyS') {
         keysRef.current.down = false;
-      } else if (code === 'ArrowLeft') {
+      } else if (code === 'ArrowLeft' || code === 'KeyA') {
         keysRef.current.left = false;
-      } else if (code === 'ArrowRight') {
+      } else if (code === 'ArrowRight' || code === 'KeyD') {
         keysRef.current.right = false;
       }
     };
@@ -426,11 +554,18 @@ export default function HomePage() {
         }
 
         const moveTank = (direction: Direction) => {
+          const originalX = player.x;
+          const originalY = player.y;
           player.direction = direction;
           const vector = directionVectors[direction];
           player.x += vector.dx * PLAYER_SPEED * deltaFrames;
           player.y += vector.dy * PLAYER_SPEED * deltaFrames;
           clampTank(player);
+
+          if (isCollidingWithWalls(player.x, player.y, TANK_SIZE, TANK_SIZE, wallsRef.current)) {
+            player.x = originalX;
+            player.y = originalY;
+          }
         };
 
         if (keys.up && !keys.down && !keys.left && !keys.right) {
@@ -456,7 +591,8 @@ export default function HomePage() {
             chooseEnemyDirection(enemy, player);
           }
 
-          moveEnemy(enemy, deltaFrames);
+          moveEnemy(enemy, deltaFrames, wallsRef.current);
+
 
           if (
             enemy.fireTimer <= 0 &&
@@ -486,6 +622,11 @@ export default function HomePage() {
           bullet.x += bullet.vx * deltaFrames;
           bullet.y += bullet.vy * deltaFrames;
 
+          if (isCollidingWithWalls(bullet.x, bullet.y, bullet.size, bullet.size, wallsRef.current)) {
+            bullets.splice(i, 1);
+            continue;
+          }
+
           if (
             bullet.x < -bullet.size ||
             bullet.x > FIELD_SIZE + bullet.size ||
@@ -514,11 +655,19 @@ export default function HomePage() {
                 setEnemiesRemaining(remaining);
 
                 if (remaining <= 0) {
-                  gameStatusRef.current = 'victory';
-                  updateGameState('victory');
-                  updateStatusMessage('All enemy units neutralized!');
+                 if (currentLevel + 1 < levels.length) {
+                   updateStatusMessage(`LEVEL ${currentLevel + 1} CLEARED!`);
+                   gameStatusRef.current = 'running';
+                   setTimeout(() => {
+                     resetGame(currentLevel + 1);
+                   }, 2000);
+                 } else {
+                   gameStatusRef.current = 'victory';
+                   updateGameState('victory');
+                   updateStatusMessage('ALL LEVELS COMPLETE!');
+                 }
                 } else {
-                  updateStatusMessage(`${remaining} enemy tank${remaining === 1 ? '' : 's'} remaining!`);
+                 updateStatusMessage(`${remaining} enemy tank${remaining === 1 ? '' : 's'} remaining!`);
                 }
               }
             });
@@ -552,6 +701,7 @@ export default function HomePage() {
         player,
         enemies,
         bullets,
+        walls: wallsRef.current,
         flickerPlayer: playerHitTimerRef.current > 0,
         state: gameState,
         time: timestamp
@@ -576,7 +726,7 @@ export default function HomePage() {
         <div className="canvas-shell__header">
           <h1>Pixel Tank Battle</h1>
           <p>
-            Pilot your Commander-class tank through the neon-lit arena. Use the arrow keys to move and press the space
+            Pilot your Commander-class tank through the neon-lit arena. Use the arrow keys or WASD to move and press the space
             bar or enter to fire. Eliminate every rogue tank before they take you out.
           </p>
 
@@ -589,6 +739,12 @@ export default function HomePage() {
               <span>Armor</span>
               <span className={`status-panel__value ${playerHealth <= 1 ? 'status-panel__value--danger' : ''}`}>{hearts}</span>
             </div>
+            <div className="status-panel__section">
+                <span>Level</span>
+                <span className="status-panel__value">
+                  {currentLevel + 1} / {levels.length}
+                </span>
+              </div>
             <div className="status-panel__section">
               <span>Enemies</span>
               <span className={`status-panel__value ${enemiesRemaining === 0 ? 'status-panel__value--success' : ''}`}>
@@ -615,10 +771,19 @@ export default function HomePage() {
         <canvas ref={canvasRef} className="game-canvas" />
 
         <div className="action-bar">
-          <button type="button" className="action-bar__button" onClick={resetGame}>
-            Reset Mission
+          <button type="button" className="action-bar__button" onClick={() => resetGame(currentLevel)}>
+            Reset Level
           </button>
-          <span className="action-bar__tip">Arrow keys to move — Space / Enter to shoot</span>
+          {gameState !== 'running' && (
+            <button
+              type="button"
+              className="action-bar__button action-bar__button--primary"
+              onClick={() => resetGame(gameState === 'defeat' ? currentLevel : 0, true)}
+            >
+              Restart Game
+            </button>
+          )}
+          <span className="action-bar__tip">Arrow keys or WASD to move — Space / Enter to shoot</span>
         </div>
 
         <div className="game-log">{statusMessage}</div>
