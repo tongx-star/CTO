@@ -248,7 +248,7 @@ const chooseEnemyDirection = (enemy: EnemyTank, player: Tank) => {
   enemy.changeTimer = randomRange(80, 200);
 };
 
-const moveEnemy = (enemy: EnemyTank, delta: number, walls: Wall[]) => {
+const moveEnemy = (enemy: EnemyTank, delta: number, walls: Wall[], player: Tank) => {
   const originalX = enemy.x;
   const originalY = enemy.y;
   const vector = directionVectors[enemy.direction];
@@ -259,7 +259,7 @@ const moveEnemy = (enemy: EnemyTank, delta: number, walls: Wall[]) => {
   if (isCollidingWithWalls(enemy.x, enemy.y, TANK_SIZE, TANK_SIZE, walls)) {
     enemy.x = originalX;
     enemy.y = originalY;
-    chooseEnemyDirection(enemy, playerRef.current);
+    chooseEnemyDirection(enemy, player);
   }
 };
 
@@ -591,7 +591,7 @@ export default function HomePage() {
             chooseEnemyDirection(enemy, player);
           }
 
-          moveEnemy(enemy, deltaFrames, wallsRef.current);
+          moveEnemy(enemy, deltaFrames, wallsRef.current, player);
 
 
           if (
