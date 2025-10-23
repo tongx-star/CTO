@@ -64,6 +64,8 @@ const MOVEMENT_KEYS: Record<string, Direction> = {
   KeyD: 'right'
 };
 
+const DIRECTIONS: readonly Direction[] = ['up', 'down', 'left', 'right'];
+
 function clamp(value: number, min: number, max: number) {
   return Math.min(Math.max(value, min), max);
 }
@@ -371,7 +373,7 @@ function updateEnemies(state: RuntimeState, delta: number) {
     enemy.changeDirectionTimer -= delta;
 
     if (enemy.changeDirectionTimer <= 0) {
-      const directions: Direction[] = ['up', 'down', 'left', 'right'];
+      const directions = DIRECTIONS;
       enemy.direction = directions[Math.floor(Math.random() * directions.length)];
       enemy.changeDirectionTimer = randomInRange(ENEMY_DIRECTION_INTERVAL.min, ENEMY_DIRECTION_INTERVAL.max);
     }
@@ -397,7 +399,7 @@ function updateEnemies(state: RuntimeState, delta: number) {
     }
 
     if (blockedX && blockedY) {
-      const directions: Direction[] = ['up', 'down', 'left', 'right'].filter((dir) => dir !== enemy.direction);
+      const directions = DIRECTIONS.filter((dir) => dir !== enemy.direction);
       enemy.direction = directions[Math.floor(Math.random() * directions.length)] ?? enemy.direction;
     }
 
