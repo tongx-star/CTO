@@ -1,33 +1,57 @@
-# Pixel Tank Battle
+# 像素坦克大战 Pixel Tank Battles
 
-一个使用 Next.js 构建的像素风格网页版坦克大战小游戏。玩家可以通过方向键操控坦克移动，按下空格或回车键发射炮弹，击毁全部敌方坦克即可取得胜利。
+使用 Next.js 构建的像素风格坦克大战游戏。玩家可以自定义用户名、挑战多种关卡、操控坦克击败敌军，并通过道具系统升级武器或回复生命。
 
-## 功能特色
+## 功能特性
+- 🎮 **核心玩法**：坦克移动、射击、碰撞检测与敌方 AI。
+- 🗺️ **关卡系统**：3 个精心设计的像素地图，难度循序渐进。
+- 🧑‍✈️ **用户自定义**：开局前设置用户名，记录在 HUD 中。
+- ❤️ **生命值系统**：初始三滴血，可通过道具恢复或因陷阱损失。
+- ⚙️ **道具机制**：黄色升级道具提供穿透炮弹，绿色维修包回复生命，红色地雷造成伤害。
+- ⏯️ **游戏控制**：开始、暂停、重置、下一关按钮，以及键盘操作提示。
 
-- 🎮 经典俯视视角的坦克对战体验
-- ✨ 纯像素风格的画面与 UI
-- 🧠 简单的敌人 AI：会随机巡逻并向玩家射击
-- 🔄 一键重置战局，快速重新挑战
+## 技术栈
+- [Next.js 14](https://nextjs.org/)
+- React 18（客户端组件与自定义 hooks）
+- TypeScript
+- HTML5 Canvas 渲染像素艺术风格战场
 
 ## 本地运行
-
 ```bash
 npm install
 npm run dev
 ```
 
-在浏览器中访问 `http://localhost:3000` 即可开始游戏。
+访问 `http://localhost:3000` 即可体验游戏。
 
-## 操作说明
+## 资源与文档
+- 🎨 [游戏界面设计图](public/design/pixel-tank-ui.svg)
+- 📄 [关卡设计文档](docs/level-design.md)
+- 📘 [用户手册](docs/user-manual.md)
 
-- **方向键**：移动坦克（一次一个方向）
-- **空格 / 回车**：发射炮弹
-- 击毁所有敌方坦克即可获胜，被击毁则任务失败
+## 项目结构
+```
+├── app
+│   ├── components
+│   │   ├── GameCanvas.tsx
+│   │   ├── GameHud.tsx
+│   │   └── useGameEngine.ts
+│   ├── globals.css
+│   ├── layout.tsx
+│   └── page.tsx
+├── lib
+│   └── game
+│       ├── levels.ts
+│       └── types.ts
+├── docs
+│   ├── level-design.md
+│   └── user-manual.md
+├── public
+│   └── design
+│       └── pixel-tank-ui.svg
+├── package.json
+└── tsconfig.json
+```
 
-## 技术栈
-
-- [Next.js 14](https://nextjs.org/)
-- React 18
-- TypeScript
-
-祝你好运，指挥官！
+## 许可
+本项目用于演示与学习目的，可自由拓展与二次开发。
