@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" shape-rendering="crispEdges">
+  <defs>
+    <style>
+      .grid { fill: none; stroke: rgba(255,255,255,0.04); stroke-width: 1; }
+    </style>
+  </defs>
+  <rect width="160" height="160" fill="#0b1017" />
+
+  <!-- battlefield walls -->
+  <rect x="0" y="0" width="160" height="160" fill="none" stroke="#3b5778" stroke-width="6" />
+
+  <!-- obstacles -->
+  <rect x="24" y="24" width="16" height="16" fill="#203147" />
+  <rect x="24" y="40" width="16" height="16" fill="#203147" />
+  <rect x="40" y="24" width="16" height="16" fill="#203147" />
+  <rect x="88" y="56" width="16" height="16" fill="#203147" />
+  <rect x="104" y="56" width="16" height="16" fill="#203147" />
+  <rect x="88" y="72" width="16" height="16" fill="#203147" />
+
+  <!-- power ups -->
+  <rect x="56" y="40" width="16" height="16" fill="#ffe066" />
+  <rect x="120" y="88" width="16" height="16" fill="#6affca" />
+  <rect x="56" y="104" width="16" height="16" fill="#ff5f7a" />
+
+  <!-- player tank -->
+  <rect x="56" y="72" width="24" height="24" fill="#6fffe9" />
+  <rect x="66" y="54" width="4" height="20" fill="#061018" />
+
+  <!-- enemy tanks -->
+  <rect x="104" y="24" width="24" height="24" fill="#ff6f91" />
+  <rect x="24" y="112" width="24" height="24" fill="#ff6f91" />
+
+  <!-- bullets -->
+  <rect x="78" y="60" width="6" height="6" fill="#ffe066" />
+  <rect x="118" y="36" width="6" height="6" fill="#ff4f66" />
+
+  <!-- UI header -->
+  <rect x="12" y="8" width="136" height="20" fill="#1a2433" stroke="#3b5778" stroke-width="2" />
+  <text x="80" y="22" font-family="'Press Start 2P', monospace" font-size="7" text-anchor="middle" fill="#f5d67b">
+    PIXEL TANK HUD
+  </text>
+
+  <!-- hearts -->
+  <rect x="20" y="10" width="6" height="6" fill="#ff6b81" />
+  <rect x="28" y="10" width="6" height="6" fill="#ff6b81" />
+  <rect x="36" y="10" width="6" height="6" fill="#ff6b81" />
+
+  <!-- status panel -->
+  <rect x="12" y="132" width="136" height="20" fill="#1a2433" stroke="#3b5778" stroke-width="2" />
+  <text x="20" y="146" font-family="'VT323', monospace" font-size="8" fill="#9baec8">
+    START  |  PAUSE  |  NEXT
+  </text>
+</svg>
