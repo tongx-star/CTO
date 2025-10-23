@@ -64,7 +64,7 @@ const MOVEMENT_KEYS: Record<string, Direction> = {
   KeyD: 'right'
 };
 
-const DIRECTIONS: readonly Direction[] = ['up', 'down', 'left', 'right'];
+const DIRECTIONS: Direction[] = ['up', 'down', 'left', 'right'];
 
 function clamp(value: number, min: number, max: number) {
   return Math.min(Math.max(value, min), max);
