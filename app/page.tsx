@@ -154,7 +154,8 @@ export default function Home() {
             <div style={{ color: 'var(--text-secondary)', fontSize: '1.1rem', lineHeight: 1.8 }}>
               <p>WASD / 方向键：移动坦克</p>
               <p>空格：发射炮弹</p>
-              <p>收集黄色道具可升级为穿透炮弹，绿色维修包可恢复生命，红色地雷会造成伤害。</p>
+              <p>炮弹可以穿透墙体，利用掩体也能远距离狙击受保护的敌人。</p>
+              <p>收集黄色道具可强化穿透炮弹的持续时间与伤害，绿色维修包可恢复生命，红色地雷会造成伤害。</p>
             </div>
           </div>
 

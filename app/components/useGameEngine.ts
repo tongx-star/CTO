@@ -429,6 +429,9 @@ function handleBulletCollisions(state: RuntimeState, bullet: BulletState) {
   const tileY = Math.floor(bullet.position.y / tileSize);
 
   if (isWall(matrix, tileX, tileY)) {
+    if (bullet.owner === 'player') {
+      return;
+    }
     bullet.active = false;
     return;
   }
