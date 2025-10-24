@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import GameCanvas from './components/GameCanvas';
 import { GameHud } from './components/GameHud';
 import { useGameEngine } from './components/useGameEngine';
@@ -37,6 +37,16 @@ export default function Home() {
     controls.nextLevel();
     setHasStarted(true);
   };
+
+  useEffect(() => {
+    if (snapshot.stage === 'idle') {
+      return;
+    }
+
+    if (snapshot.levelId && snapshot.levelId !== selectedLevelId) {
+      setSelectedLevelId(snapshot.levelId);
+    }
+  }, [snapshot.levelId, snapshot.stage, selectedLevelId]);
 
   return (
     <main>
@@ -154,8 +164,8 @@ export default function Home() {
             <div style={{ color: 'var(--text-secondary)', fontSize: '1.1rem', lineHeight: 1.8 }}>
               <p>WASD / 方向键：移动坦克</p>
               <p>空格：发射炮弹</p>
-              <p>炮弹可以穿透墙体，利用掩体也能远距离狙击受保护的敌人。</p>
-              <p>收集黄色道具可强化穿透炮弹的持续时间与伤害，绿色维修包可恢复生命，红色地雷会造成伤害。</p>
+              <p>普通炮弹会被墙体阻挡；拾取黄色道具后可短时间穿墙射击。</p>
+              <p>黄色道具提供穿墙与强化火力，绿色维修包可恢复生命，红色地雷会造成伤害。</p>
             </div>
           </div>
 

@@ -430,10 +430,14 @@ function handleBulletCollisions(state: RuntimeState, bullet: BulletState) {
 
   if (isWall(matrix, tileX, tileY)) {
     if (bullet.owner === 'player') {
+      if (bullet.type !== 'piercing') {
+        bullet.active = false;
+        return;
+      }
+    } else {
+      bullet.active = false;
       return;
     }
-    bullet.active = false;
-    return;
   }
 
   if (bullet.owner === 'player') {
