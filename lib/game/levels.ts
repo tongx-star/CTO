@@ -78,7 +78,7 @@ export const LEVELS: LevelDefinition[] = [
   {
     id: 4,
     name: '沙漠风暴',
-    description: '沙尘暴裹挟着零散补给，狭长通道考验机动与穿墙火力的运用。',
+    description: '沙尘暴裹挟着零散补给，狭长通道考验机动与黄色穿透道具带来的穿墙火力运用。',
     difficulty: 'medium',
     layout: [
       '###############',
@@ -101,7 +101,7 @@ export const LEVELS: LevelDefinition[] = [
   {
     id: 5,
     name: '冰封裂谷',
-    description: '冰雪掩护下的狭窄裂谷，敌军埋伏在暗处，保持火力穿墙推进才能取胜。',
+    description: '冰雪掩护下的狭窄裂谷，敌军埋伏在暗处，需借助黄色道具保持穿墙火力推进才能取胜。',
     difficulty: 'hard',
     layout: [
       '###############',
